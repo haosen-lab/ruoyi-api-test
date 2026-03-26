@@ -45,7 +45,7 @@ DB_CONFIG = {
     "port": _get_env_int("DB_PORT", 3306),
     "user": _get_env("DB_USER", "root"),
     "password": _get_env("DB_PASSWORD", "root"),
-    "database": _get_env("DB_NAME", "ry")
+    "database": _get_env("DB_NAME", "ry-vue")
 }
 
 # Redis配置 - 从环境变量读取
