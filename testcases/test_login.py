@@ -1,12 +1,11 @@
 """
 登录认证模块测试用例
-优化：移除登录接口中不恰当的边界值测试（边界值应该在新增用户时验证）
 """
 import pytest
 import allure
 from api.login_api import login_api
 from utils.assert_utils import asserter
-from config.settings import ADMIN_USER
+from config.settings import ADMIN_USER, LENGTH_LIMITS
 from utils.data_generator import generator
 
 
@@ -82,6 +81,58 @@ class TestLogin:
         asserter.assert_code(response, 200)
         asserter.assert_success(response, False)
     
+    @allure.story("边界值测试")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("用户名最小长度边界测试")
+    def test_login_username_min_length(self):
+        """测试用户名最小长度边界"""
+        min_username = "a" * LENGTH_LIMITS["username_min"]
+        response = login_api.login(
+            username=min_username,
+            password=ADMIN_USER["password"]
+        )
+        
+        asserter.assert_code(response, 200)
+    
+    @allure.story("边界值测试")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("用户名最大长度边界测试")
+    def test_login_username_max_length(self):
+        """测试用户名最大长度边界"""
+        max_username = "a" * LENGTH_LIMITS["username_max"]
+        response = login_api.login(
+            username=max_username,
+            password=ADMIN_USER["password"]
+        )
+        
+        asserter.assert_code(response, 200)
+    
+    @allure.story("边界值测试")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("密码最小长度边界测试")
+    def test_login_password_min_length(self):
+        """测试密码最小长度边界"""
+        min_password = "a" * LENGTH_LIMITS["password_min"]
+        response = login_api.login(
+            username=ADMIN_USER["username"],
+            password=min_password
+        )
+        
+        asserter.assert_code(response, 200)
+    
+    @allure.story("边界值测试")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("密码最大长度边界测试")
+    def test_login_password_max_length(self):
+        """测试密码最大长度边界"""
+        max_password = "a" * LENGTH_LIMITS["password_max"]
+        response = login_api.login(
+            username=ADMIN_USER["username"],
+            password=max_password
+        )
+        
+        asserter.assert_code(response, 200)
+    
     @allure.story("安全测试")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.title("SQL注入攻击测试")
@@ -152,6 +203,19 @@ class TestLogin:
         response = login_api.get_info(req=fresh_session)
         # 未登录应该返回401或类似错误
         assert response.status_code in [401, 403, 200]
+    
+    @allure.story("特殊字符测试")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("用户名包含特殊字符")
+    @pytest.mark.parametrize("special_char", generator.generate_special_chars())
+    def test_login_special_chars_username(self, special_char):
+        """测试用户名包含特殊字符"""
+        response = login_api.login(
+            username=special_char,
+            password=ADMIN_USER["password"]
+        )
+        
+        asserter.assert_code(response, 200)
 
     @allure.story("异常登录场景")
     @allure.severity(allure.severity_level.NORMAL)

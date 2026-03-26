@@ -22,13 +22,10 @@ def get_test_case_info():
 
 def pytest_runtest_setup(item):
     """测试用例执行前 - 收集中文标题"""
-    # 对于参数化测试用例，先去掉参数部分（去掉方括号及内容）
-    base_name = item.name.split('[')[0]
-    
     # 获取测试函数对象
     func = None
     for obj in item.instance.__class__.__dict__.values():
-        if hasattr(obj, '__name__') and obj.__name__ == base_name:
+        if hasattr(obj, '__name__') and obj.__name__ == item.name:
             func = obj
             break
     
@@ -48,7 +45,7 @@ def pytest_runtest_setup(item):
                     chinese_title = match.group(1)
     
     # 也检查函数的docstring
-    if chinese_title == item.name and func and func.__doc__:
+    if chinese_title == item.name and func.__doc__:
         chinese_title = func.__doc__.strip().split('\n')[0]
     
     # 存储测试用例信息

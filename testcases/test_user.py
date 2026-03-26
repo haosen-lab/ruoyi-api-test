@@ -9,6 +9,7 @@ from utils.assert_utils import asserter
 from config.settings import ADMIN_USER, LENGTH_LIMITS
 from utils.data_generator import generator
 from utils.db_utils import db
+from utils.param_validator import param_validator
 
 
 @allure.epic("若依后台管理系统")
@@ -674,4 +675,140 @@ class TestUser:
         """测试导出用户数据"""
         response = user_api.export_users(userName="admin")
 
+        asserter.assert_code(response, 200)
+
+    @allure.story("参数校验-查询")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("分页查询-页码参数校验")
+    @pytest.mark.parametrize("case_name,page_num,should_success", 
+        param_validator.create_param_test_cases(
+            "page_num",
+            param_validator.get_valid_page_num(),
+            param_validator.get_invalid_page_nums()
+        )
+    )
+    def test_list_users_page_num_validation(self, case_name, page_num, should_success):
+        """测试分页查询-页码参数校验"""
+        allure.dynamic.title(f"分页查询-页码参数校验-{case_name}")
+        
+        response = user_api.list_users(page_num=page_num, page_size=10)
+        
+        asserter.assert_code(response, 200)
+        if should_success:
+            asserter.assert_success(response, True)
+
+    @allure.story("参数校验-查询")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("分页查询-每页条数参数校验")
+    @pytest.mark.parametrize("case_name,page_size,should_success", 
+        param_validator.create_param_test_cases(
+            "page_size",
+            param_validator.get_valid_page_size(),
+            param_validator.get_invalid_page_sizes()
+        )
+    )
+    def test_list_users_page_size_validation(self, case_name, page_size, should_success):
+        """测试分页查询-每页条数参数校验"""
+        allure.dynamic.title(f"分页查询-每页条数参数校验-{case_name}")
+        
+        response = user_api.list_users(page_num=1, page_size=page_size)
+        
+        asserter.assert_code(response, 200)
+        if should_success:
+            asserter.assert_success(response, True)
+
+    @allure.story("参数校验-查询")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("获取用户详情-ID参数校验")
+    @pytest.mark.parametrize("case_name,user_id,should_success", 
+        param_validator.create_param_test_cases(
+            "user_id",
+            param_validator.get_valid_id(),
+            param_validator.get_invalid_ids()
+        )
+    )
+    def test_get_user_id_validation(self, case_name, user_id, should_success):
+        """测试获取用户详情-ID参数校验"""
+        allure.dynamic.title(f"获取用户详情-ID参数校验-{case_name}")
+        
+        response = user_api.get_user(user_id)
+        
+        asserter.assert_code(response, 200)
+        if should_success:
+            # 合法ID应该返回成功或用户不存在
+            pass
+
+    @allure.story("参数校验-删除")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("删除用户-ID参数校验")
+    @pytest.mark.parametrize("case_name,user_id,should_success", 
+        param_validator.create_param_test_cases(
+            "user_id",
+            param_validator.get_valid_id(),
+            param_validator.get_invalid_ids()
+        )
+    )
+    def test_delete_user_id_validation(self, case_name, user_id, should_success):
+        """测试删除用户-ID参数校验"""
+        allure.dynamic.title(f"删除用户-ID参数校验-{case_name}")
+        
+        response = user_api.delete_users([user_id] if user_id is not None else [])
+        
+        asserter.assert_code(response, 200)
+
+    @allure.story("参数校验-新增")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("新增用户-用户名参数校验")
+    @pytest.mark.parametrize("case_name,username,should_success", 
+        param_validator.create_param_test_cases(
+            "username",
+            param_validator.get_valid_username(),
+            param_validator.get_invalid_usernames()
+        )
+    )
+    def test_add_user_username_validation(self, test_user_data, case_name, username, should_success):
+        """测试新增用户-用户名参数校验"""
+        allure.dynamic.title(f"新增用户-用户名参数校验-{case_name}")
+        
+        test_user_data["userName"] = username
+        response = user_api.add_user(test_user_data)
+        
+        asserter.assert_code(response, 200)
+
+    @allure.story("参数校验-新增")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("新增用户-手机号参数校验")
+    @pytest.mark.parametrize("case_name,phone,should_success", 
+        param_validator.create_param_test_cases(
+            "phone",
+            param_validator.get_valid_phone(),
+            param_validator.get_invalid_phones()
+        )
+    )
+    def test_add_user_phone_validation(self, test_user_data, case_name, phone, should_success):
+        """测试新增用户-手机号参数校验"""
+        allure.dynamic.title(f"新增用户-手机号参数校验-{case_name}")
+        
+        test_user_data["phonenumber"] = phone
+        response = user_api.add_user(test_user_data)
+        
+        asserter.assert_code(response, 200)
+
+    @allure.story("参数校验-新增")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("新增用户-邮箱参数校验")
+    @pytest.mark.parametrize("case_name,email,should_success", 
+        param_validator.create_param_test_cases(
+            "email",
+            param_validator.get_valid_email(),
+            param_validator.get_invalid_emails()
+        )
+    )
+    def test_add_user_email_validation(self, test_user_data, case_name, email, should_success):
+        """测试新增用户-邮箱参数校验"""
+        allure.dynamic.title(f"新增用户-邮箱参数校验-{case_name}")
+        
+        test_user_data["email"] = email
+        response = user_api.add_user(test_user_data)
+        
         asserter.assert_code(response, 200)
